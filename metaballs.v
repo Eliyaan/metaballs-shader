@@ -62,6 +62,7 @@ fn init(mut app App) {
 		Vertex_t{1.0, -1.0, 0.0},
 	]
 
+	// Complex buffer stuff
 	mut vertex_buffer_desc := gfx.BufferDesc{
 		label: c'triangles-vertices'
 	}
@@ -72,17 +73,19 @@ fn init(mut app App) {
 		ptr: vertices.data
 		size: vertex_buffer_desc.size
 	}
-
 	app.bind.vertex_buffers[0] = gfx.make_buffer(&vertex_buffer_desc)
 
+	// creates the shader
 	shader := gfx.make_shader(C.metaballs_shader_desc(gfx.query_backend()))
 
+	// setups the pipeline
 	mut pipeline_desc := gfx.PipelineDesc{}
 	unsafe { vmemset(&pipeline_desc, 0, int(sizeof(pipeline_desc))) }
 
 	pipeline_desc.shader = shader
-	pipeline_desc.layout.attrs[C.ATTR_vs_position].format = .float3 // x,y,z as f32
 	pipeline_desc.label = c'triangle-pipeline'
+	// input via the buffer:
+	pipeline_desc.layout.attrs[C.ATTR_vs_position].format = .float3 // x,y,z as f32
 
 	app.shader_pipeline = gfx.make_pipeline(&pipeline_desc)
 }
@@ -93,20 +96,25 @@ fn frame(mut app App) {
 
 	gfx.apply_pipeline(app.shader_pipeline)
 	gfx.apply_bindings(&app.bind)
+
+	// Create the data to send
 	size := app.gg.window_size()
 	mouse_x := (app.mouse_x - size.width / 2) / f32(size.width) * 2
 	mouse_y := -(app.mouse_y - size.height / 2) / f32(size.height) * 2
+	// vfmt off
 	tmp_fs_params := [
-		f32(0), 0.0, 0.0, 0.0 // 2 padding 0's
+		f32(0), 0.0, 0.0, 0.0, // 2 padding 0's
 		mouse_x, mouse_y, 0.0, 0.0,
 		-0.3, 0.6, 0.0, 0.0,
 		0.8, -0.2, 0.0, 0.0,
-		-0.7, -0.7, 0.0, 0.0
+		-0.7, -0.7, 0.0, 0.0,
 	]!
+	// vfmt on
 	fs_uniforms_range := gfx.Range{
 		ptr: unsafe { &tmp_fs_params }
 		size: usize(sizeof(tmp_fs_params))
 	}
+	// send it to the fragment shader
 	gfx.apply_uniforms(.fs, C.SLOT_fs_params, &fs_uniforms_range)
 
 	gfx.draw(0, 6, 1)

@@ -38,7 +38,7 @@ void main() {
 		color = 0;
 	}
 	
-	float sine = sin(pos.x*2) + sin(pos.y*2) + 0.4;
+	float sine = (sin(pos.x*2) + sin(pos.y*2))*0.6 + 0.4;
 	vec4 shade = vec4(sine*0.22, sine*0.66, sine, 1.0);
 	frag_color = shade*color;
 }
