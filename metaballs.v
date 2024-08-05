@@ -47,6 +47,11 @@ fn event(mut e gg.Event, mut app App) {
 		app.mouse_x = e.mouse_x
 		app.mouse_y = e.mouse_y
 	}
+	if e.typ == .key_down {
+		if e.key_code == .escape {
+			app.gg.quit()
+		}
+	}
 }
 
 fn init(mut app App) {
